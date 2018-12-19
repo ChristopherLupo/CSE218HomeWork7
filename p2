@@ -1,0 +1,410 @@
+public class Node {
+
+	private String date;
+	private String value;
+	private Node leftChild;
+	private Node rightChild;
+	
+	public String getDate() {
+		return date;
+	}
+	public void setDate(String date) {
+		this.date = date;
+	}
+	public String getValue() {
+		return value;
+	}
+	public void setValue(String value) {
+		this.value = value;
+	}
+	public Node getLeftChild() {
+		return leftChild;
+	}
+	public void setLeftChild(Node leftChild) {
+		this.leftChild = leftChild;
+	}
+	public Node getRightChild() {
+		return rightChild;
+	}
+	public void setRightChild(Node rightChild) {
+		this.rightChild = rightChild;
+	}
+
+}
+
+import java.util.Stack;
+
+public class Tree {
+
+	private Node root;
+
+	public Tree() {
+		root = null;
+	}
+
+	public void insert(String date, String value) {
+		Node newNode = new Node();
+		newNode.setDate(date);
+		newNode.setValue(value);
+
+		if (root == null) {
+			root = newNode;
+		} else {
+			Node current = root;
+			Node parent;
+			while (true) {
+				parent = current;
+
+				String[] t1 = date.split("[/]");
+				String[] t2 = current.getDate().split("[/]");
+
+				int count1 = Integer.parseInt(t1[1]) + Integer.parseInt(t1[0]) * 100 + Integer.parseInt(t1[2]) * 10000;
+
+				int count2 = Integer.parseInt(t2[1]) + Integer.parseInt(t2[0]) * 100 + Integer.parseInt(t2[2]) * 10000;
+
+				if (count1 < count2) {
+					current = current.getLeftChild();
+					if (current == null) {
+						parent.setLeftChild(newNode);
+						return;
+					}
+				} else {
+					current = current.getRightChild();
+					if (current == null) {
+						parent.setRightChild(newNode);
+						return;
+					}
+				}
+			}
+		}
+	}
+
+	public Node find(String key) {
+		Node current = root;
+		
+		String[] t1 = key.split("[/]");
+		String[] t2 = current.getDate().split("[/]");
+
+		int count1 = Integer.parseInt(t1[1]) + Integer.parseInt(t1[0]) * 100 + Integer.parseInt(t1[2]) * 10000;
+
+		int count2 = Integer.parseInt(t2[1]) + Integer.parseInt(t2[0]) * 100 + Integer.parseInt(t2[2]) * 10000;
+		
+		while (count1 != count2) {
+			if (count1 < count2) {
+				current = current.getLeftChild();
+				if (current == null) {
+					return null;
+				}
+				String[] t3 = current.getDate().split("[/]");
+				count2 = Integer.parseInt(t3[1]) + Integer.parseInt(t3[0]) * 100 + Integer.parseInt(t3[2]) * 10000;
+			} else {
+				current = current.getRightChild();
+				if (current == null) {
+					return null;
+				}
+				String[] t3 = current.getDate().split("[/]");
+				count2 = Integer.parseInt(t3[1]) + Integer.parseInt(t3[0]) * 100 + Integer.parseInt(t3[2]) * 10000;
+			}
+		}
+		return current; 
+	}
+
+	public void newTree() {
+		root = null;
+	}
+
+	public void displayTree() {
+
+		Stack<Node> globalStack = new Stack<Node>();
+		globalStack.push(root);
+		int nBlanks = 32;
+		boolean isRowEmpty = false;
+		System.out.print("-------------------------------------------------------------\n");
+		while (isRowEmpty == false) {
+			Stack<Node> localStack = new Stack<Node>();
+			isRowEmpty = true;
+
+			for (int j = 0; j < nBlanks; j++) {
+				System.out.print(" ");
+			}
+
+			while (globalStack.isEmpty() == false) {
+				Node temp = globalStack.pop();
+				if (temp != null) {
+					System.out.print(temp.getDate() + " " + temp.getValue());
+					localStack.push(temp.getLeftChild());
+					localStack.push(temp.getRightChild());
+
+					if (temp.getLeftChild() != null || temp.getRightChild() != null) {
+						isRowEmpty = false;
+					}
+				} else {
+					System.out.print("--");
+					localStack.push(null);
+					localStack.push(null);
+				}
+
+				for (int j = 0; j < nBlanks * 2 - 2; j++) {
+					System.out.print(" ");
+				}
+			} // end while globalStack not empty
+			System.out.println();
+			nBlanks /= 2;
+			while (localStack.isEmpty() == false) {
+				globalStack.push(localStack.pop());
+			}
+		} // end while isRowEmpty is false
+		System.out.print("-------------------------------------------------------------\n");
+	}
+
+}
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Scanner;
+
+import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class Demo extends Application {
+
+	public static void main(String[] args) {
+		Application.launch(args);
+	}
+
+	@Override
+	public void start(Stage primaryStage) throws FileNotFoundException {
+		Menu m1 = new Menu("Load");
+		Menu m2 = new Menu("Search");
+		Menu m3 = new Menu("Compare");
+		m2.setDisable(true);
+		m3.setDisable(true);
+
+		MenuItem mi1 = new MenuItem("Ordered");
+		MenuItem mi2 = new MenuItem("Randomized");
+		MenuItem mi3 = new MenuItem("Reset");
+		m1.getItems().addAll(mi1, mi2, mi3);
+
+		MenuItem mi4 = new MenuItem("Simple");
+		m2.getItems().add(mi4);
+
+		MenuItem mi5 = new MenuItem("Simple");
+		m3.getItems().add(mi5);
+
+		MenuBar mb1 = new MenuBar();
+
+		mb1.getMenus().addAll(m1, m2, m3);
+
+		Scene scene = new Scene(mb1, 200, 200);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+
+		File file1 = new File("data/rawData.txt");
+		File file2 = new File("data/searchTime.txt");
+		File file3 = new File("data/compareTime.txt");
+
+		ArrayList<String> s = new ArrayList<>();
+
+		Tree t = new Tree();
+
+		String[] type = new String[1];
+		type[0] = "";
+
+		mi1.setOnAction(e -> {
+			try {
+				s.clear();
+				Scanner in = new Scanner(file1);
+
+				while (in.hasNextLine()) {
+					String str = in.next();
+					String[] tokens = str.split("\n");
+					s.add(tokens[0]);
+				}
+				t.newTree();
+
+				for (int i = 0; i < s.size(); i++) {
+					String[] t1 = s.get(i).split("[,]");
+					t.insert((t1[0]), (t1[1]));
+				}
+
+				m2.setDisable(false);
+				m3.setDisable(false);
+				in.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			type[0] = "Ordered";
+		});
+
+		mi2.setOnAction(e -> {
+			try {
+				s.clear();
+				Scanner in = new Scanner(file1);
+
+				while (in.hasNextLine()) {
+					String str = in.next();
+					String[] tokens = str.split("\n");
+					s.add(tokens[0]);
+				}
+
+				Collections.shuffle(s);
+
+				t.newTree();
+
+				for (int i = 0; i < s.size(); i++) {
+					String[] t1 = s.get(i).split("[,]");
+					t.insert((t1[0]), (t1[1]));
+				}
+
+				m2.setDisable(false);
+				m3.setDisable(false);
+				in.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			type[0] = "Randonimzed";
+		});
+
+		mi3.setOnAction(e -> {
+			s.clear();
+
+			try {
+				FileWriter f1 = new FileWriter(file2, false);
+				FileWriter f2 = new FileWriter(file3, false);
+
+				f1.write("");
+				f2.write("");
+
+				f1.close();
+				f2.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
+			m2.setDisable(true);
+			m3.setDisable(true);
+		});
+
+		mi4.setOnAction(e -> {
+			Label l = new Label("Enter the the date that you want to search: (M/D/Y)");
+
+			TextField t1 = new TextField();
+
+			Button b = new Button("Enter Text");
+			VBox v = new VBox();
+			v.getChildren().addAll(l, t1, b);
+			v.setAlignment(Pos.CENTER);
+
+			Scene scene1 = new Scene(v);
+			Stage stage1 = new Stage();
+			stage1.setScene(scene1);
+			stage1.show();
+
+			b.setOnAction(i -> {
+				if (t1.getText().equals("")) {
+					l.setText("Please enter dates in the areas: (M/D/Y)");
+				} else {
+
+					long time = System.nanoTime();
+					Node find = t.find(t1.getText());
+					long search = System.nanoTime() - time;
+
+					if (find == null) {
+						l.setText("Business was closed that day try again: (M/D/Y)");
+					} else {
+						try {
+							FileWriter f1 = new FileWriter(file2, true);
+							f1.write("Search type: " + type[0] + ", Time to find: " + search + " in nanoseconds \n");
+							f1.write("Results found: " + find.getDate() + "," + find.getValue() + "\n");
+							f1.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						stage1.close();
+					}
+
+				}
+			});
+		});
+
+		mi5.setOnAction(e -> {
+			Label l = new Label("Enter the first and second date to compare: (M/D/Y)");
+
+			TextField t1 = new TextField();
+			TextField t2 = new TextField();
+
+			Button b = new Button("Enter Text");
+			VBox v = new VBox();
+			v.getChildren().addAll(l, t1, t2, b);
+			v.setAlignment(Pos.CENTER);
+
+			Scene scene1 = new Scene(v);
+			Stage stage1 = new Stage();
+			stage1.setScene(scene1);
+			stage1.show();
+
+			b.setOnAction(i -> {
+				if (t1.getText().equals("") && t1.getText().equals("")) {
+					l.setText("Please enter dates in both areas: (M/D/Y)");
+				} else {
+
+					long time = System.nanoTime();
+					Node find1 = t.find(t1.getText());
+					Node find2 = t.find(t2.getText());
+					long search = System.nanoTime() - time;
+
+					if (find1 == null && find2 == null) {
+						l.setText("Business was closed for both days: (M/D/Y)");
+					} else if (find1 == null) {
+						l.setText("Business was closed for the first days: (M/D/Y)");
+					} else if (find2 == null) {
+						l.setText("Business was closed for the second days: (M/D/Y)");
+					} else {
+						String[] date1 = find1.getDate().split("[/]");
+						String[] date2 = find2.getDate().split("[/]");
+
+						int count1 = Integer.parseInt(date1[1]) + Integer.parseInt(date1[0]) * 100
+								+ Integer.parseInt(date1[2]) * 10000;
+
+						int count2 = Integer.parseInt(date2[1]) + Integer.parseInt(date2[0]) * 100
+								+ Integer.parseInt(date2[2]) * 10000;
+
+						if (count1 == count2) {
+							l.setText("They are the same day, try with different days:");
+						} else if (count1 > count2) {
+							l.setText("Enter the earlier day first:");
+						} else {
+							double value = Double.parseDouble(find2.getValue()) - Double.parseDouble(find1.getValue());
+							value = value / Double.parseDouble(find1.getValue()) * 100;
+
+							stage1.close();
+							try {
+								FileWriter f1 = new FileWriter(file3, true);
+								f1.write("Search type: " + type[0] + ", Time to find: " + search + " in nanoseconds \n");
+								f1.write("Results found: " + find1.getDate() + " and " + find2.getDate() + " have a percent change of: " + Math.round(value*100.0)/100.0 +"%\n");
+								f1.close();
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+
+						}
+					}
+
+				}
+			});
+		});
+	}
+}
